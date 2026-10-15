@@ -10,9 +10,8 @@
 
   <a-scene embedded arjs="sourceType: webcam; debugUIEnabled: false;">
     <a-marker preset="hiro">
-      <!-- 全体枠（位置調整用） -->
       <a-entity id="ar-container" position="-1.5 0.5 -1" rotation="-90 0 0">
-        <a-text value="Loading..." color="red" position="1.5 0 0" scale="2 2 2"></a-text>
+        <a-text id="status-text" value="Loading..." color="red" position="1.5 0 0" scale="2 2 2"></a-text>
       </a-entity>
     </a-marker>
     <a-entity camera></a-entity>
@@ -22,53 +21,61 @@
     const GAS_URL = "https://script.google.com/macros/s/AKfycbyd6mxiXuzvalDY4tsrAyhBHs2dyQmUIWjUWtxTmaNGIMQN7oP2OJShfrF3osazSCqOmQ/exec";
 
     fetch(GAS_URL)
-      .then(response => response.json())
+      .then(response => {
+        if (!response.ok) {
+          throw new Error("ネットワークエラー: " + response.status);
+        }
+        return response.json();
+      })
       .then(data => {
         const container = document.getElementById("ar-container");
         container.innerHTML = ""; // Loading表示を削除
 
-        // 59行目〜83行目（index: 58〜82）、P列〜AD列（index: 15〜29）を抽出
+        if (!Array.isArray(data)) {
+          throw new Error("GASからのデータが配列ではありません");
+        }
+
         let yOffset = 0;
 
+        // 59行目〜83行目（index: 58〜82）、P列〜AD列（index: 15〜29）を取得
         for (let r = 58; r <= 82; r++) {
           if (!data[r]) continue;
 
-          // 1行分のテキストを生成
           let lineStr = "";
           for (let c = 15; c <= 29; c++) {
             let val = data[r][c];
             if (val === undefined || val === null) val = "";
             if (typeof val === "number") val = Math.round(val).toLocaleString();
             
-            // 簡易的に文字幅を揃える（8文字分に整形）
-            lineStr += String(val).padEnd(8, " ") + " ";
+            lineStr += String(val).slice(0, 8).padEnd(9, " ");
           }
 
-          // 空行でなければARテキストとして追加
           if (lineStr.trim().length > 0) {
             const textEl = document.createElement("a-text");
             textEl.setAttribute("value", lineStr);
             textEl.setAttribute("position", `0 ${-yOffset} 0`);
-            textEl.setAttribute("font", "monospace"); // 等幅フォントで崩れ防止
+            textEl.setAttribute("font", "monospace");
             
-            // 見出し行は黄色、通常データはシアン（青緑）
             if (r === 58 || r === 66 || r === 74) {
               textEl.setAttribute("color", "#FFD700");
-              textEl.setAttribute("scale", "0.8 0.8 0.8");
+              textEl.setAttribute("scale", "0.7 0.7 0.7");
             } else {
               textEl.setAttribute("color", "#00FFFF");
-              textEl.setAttribute("scale", "0.6 0.6 0.6");
+              textEl.setAttribute("scale", "0.5 0.5 0.5");
             }
 
             container.appendChild(textEl);
-            yOffset += 0.18; // 行間隔
+            yOffset += 0.18;
           }
         }
       })
       .catch(error => {
-        console.error("エラー:", error);
-        const container = document.getElementById("ar-container");
-        container.innerHTML = '<a-text value="Error!" color="red" scale="2 2 2"></a-text>';
+        console.error("エラー詳細:", error);
+        const statusText = document.getElementById("status-text");
+        if (statusText) {
+          statusText.setAttribute("value", "Error: " + error.message);
+          statusText.setAttribute("scale", "1 1 1");
+        }
       });
   </script>
 
