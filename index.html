@@ -78,7 +78,7 @@
           if (!data[r]) continue;
           const tr = document.createElement("tr");
           
-          for (let c = 15; c <= 29; c++) {
+          for (let c = 15; c <= 30; c++) {
             let val = data[r][c];
             if (val === undefined || val === null) val = "";
             if (typeof val === "number") val = Math.round(val).toLocaleString();
