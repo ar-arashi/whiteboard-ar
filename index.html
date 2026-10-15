@@ -5,28 +5,88 @@
   <title>ホワイトボードAR</title>
   <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
   <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
+  <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+  <style>
+    /* AR上に表示するための表スタイル */
+    #table-container {
+      position: absolute;
+      left: -9999px;
+      top: -9999px;
+      background: #0f172a;
+      color: #ffffff;
+      padding: 15px;
+      font-family: sans-serif;
+      font-size: 11px;
+      border-radius: 8px;
+    }
+    table { border-collapse: collapse; width: 100%; }
+    th, td { border: 1px solid #334155; padding: 4px 6px; text-align: center; white-space: nowrap; }
+    th { background-color: #1e293b; color: #38bdf8; font-weight: bold; }
+    .header-row { background-color: #0284c7; color: white; }
+    .sub-header { background-color: #0f172a; color: #cbd5e1; }
+    .number-cell { text-align: right; }
+  </style>
 </head>
 <body style="margin: 0; overflow: hidden;">
 
+  <!-- 非表示のHTML表（これを画像化してAR表示します） -->
+  <div id="table-container">
+    <div style="font-size: 14px; font-weight: bold; margin-bottom: 8px; color: #38bdf8;">【成約サポーター 予測表全体】</div>
+    <table id="ar-table"></table>
+  </div>
+
   <a-scene embedded arjs="sourceType: webcam; debugUIEnabled: false;">
     <a-marker preset="hiro">
-      <a-text id="ar-text" value="Loading..." position="0 0.5 0" rotation="-90 0 0" color="red" align="center" scale="2 2 2"></a-text>
+      <!-- 表を浮き上がらせる3Dパネル -->
+      <a-plane id="ar-plane" position="0 0.5 0" rotation="-90 0 0" width="4" height="2.5" material="shader: flat; transparent: true;"></a-plane>
     </a-marker>
     <a-entity camera></a-entity>
   </a-scene>
 
   <script>
-    const GAS_URL = "https://script.google.com/macros/s/AKfycbyd6mxiXuzvalDY4tsrAyhBHs2dyQmUIWjUWtxTmaNGIMQN7oP2OJShfrF3osazSCqOmQ/exec";
+    const GAS_URL = "https://script.google.com/a/macros/batonz.co.jp/s/AKfycbyqanQoAAmCqdtUDyYH3fmLrZmAMCOAWkZeuBKcQW664QoyPQhvDb3xdEI3pLwGnW-hcQ/exec";
 
     fetch(GAS_URL)
       .then(response => response.json())
       .then(data => {
-        const textToShow = data[0][0] + " : " + data[0][1];
-        document.getElementById("ar-text").setAttribute("value", textToShow);
+        const table = document.getElementById("ar-table");
+        table.innerHTML = "";
+
+        // 59行目〜83行目（インデックス58〜82）、P列〜AD列（15列目〜29列目）を取得
+        for (let r = 58; r <= 82; r++) {
+          if (!data[r]) continue;
+          const tr = document.createElement("tr");
+          
+          for (let c = 15; c <= 29; c++) {
+            const cellValue = data[r][c] !== undefined ? data[r][c] : "";
+            const td = document.createElement(r === 58 || r === 66 || r === 74 ? "th" : "td");
+            
+            // 数値フォーマット処理
+            if (typeof cellValue === "number") {
+              td.textContent = cellValue.toLocaleString();
+              td.classList.add("number-cell");
+            } else {
+              td.textContent = cellValue;
+            }
+
+            tr.appendChild(td);
+          }
+          table.appendChild(tr);
+        }
+
+        // HTML表を画像に変換してARのPlaneに貼り付ける
+        setTimeout(() => {
+          html2canvas(document.getElementById("table-container")).then(canvas => {
+            const plane = document.getElementById("ar-plane");
+            const texture = new THREE.CanvasTexture(canvas);
+            plane.getObject3D('mesh').material.map = texture;
+            plane.getObject3D('mesh').material.needsUpdate = true;
+          });
+        }, 500);
+
       })
       .catch(error => {
         console.error("エラー:", error);
-        document.getElementById("ar-text").setAttribute("value", "Error!");
       });
   </script>
 
