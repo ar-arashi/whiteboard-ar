@@ -18,23 +18,23 @@
   </a-scene>
 
   <script>
-    // ★新しいGASのURLに更新★
     const GAS_URL = "https://script.google.com/macros/s/AKfycbyd6mxiXuzvalDY4tsrAyhBHs2dyQmUIWjUWtxTmaNGIMQN7oP2OJShfrF3osazSCqOmQ/exec";
 
-    fetch(GAS_URL)
+    // GASのリダイレクト(CORS)に対応したfetch設定
+    fetch(GAS_URL, {
+      method: "GET",
+      mode: "cors",
+      redirect: "follow"
+    })
       .then(response => {
         if (!response.ok) {
-          throw new Error("通信エラー: " + response.status);
+          throw new Error("HTTPエラー: " + response.status);
         }
         return response.json();
       })
       .then(data => {
         const container = document.getElementById("ar-container");
-        container.innerHTML = ""; // Loading表示を削除
-
-        if (!Array.isArray(data)) {
-          throw new Error("データ構造エラー");
-        }
+        container.innerHTML = ""; // Loadingを消去
 
         let yOffset = 0;
 
@@ -57,7 +57,6 @@
             textEl.setAttribute("position", `0 ${-yOffset} 0`);
             textEl.setAttribute("font", "monospace");
             
-            // 見出し行は黄色、その他はシアン
             if (r === 58 || r === 66 || r === 74) {
               textEl.setAttribute("color", "#FFD700");
               textEl.setAttribute("scale", "0.7 0.7 0.7");
@@ -75,8 +74,8 @@
         console.error("エラー詳細:", error);
         const statusText = document.getElementById("status-text");
         if (statusText) {
-          statusText.setAttribute("value", "Error: " + error.message);
-          statusText.setAttribute("scale", "1 1 1");
+          statusText.setAttribute("value", "Data Load Error");
+          statusText.setAttribute("scale", "1.5 1.5 1.5");
         }
       });
   </script>
