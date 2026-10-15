@@ -1,0 +1,66 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Style-Type" content="text/css">
+  <title></title>
+  <meta name="Generator" content="Cocoa HTML Writer">
+  <meta name="CocoaVersion" content="2575.6">
+  <style type="text/css">
+    p.p1 {margin: 0.0px 0.0px 0.0px 0.0px; font: 12.0px Helvetica}
+    p.p2 {margin: 0.0px 0.0px 0.0px 0.0px; font: 12.0px Helvetica; min-height: 14.0px}
+    p.p3 {margin: 0.0px 0.0px 0.0px 0.0px; font: 12.0px 'Helvetica Neue'; color: #000000; color: rgba(0, 0, 0, 0.85); -webkit-text-stroke: rgba(0, 0, 0, 0.85)}
+    span.s1 {font: 12.0px Helvetica; color: #000000; -webkit-text-stroke: 0px #000000}
+    span.s2 {font-kerning: none}
+  </style>
+</head>
+<body>
+<p class="p1">&lt;!DOCTYPE html&gt;</p>
+<p class="p1">&lt;html&gt;</p>
+<p class="p1">&lt;head&gt;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>&lt;meta charset="utf-8"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>&lt;title&gt;ホワイトボードAR&lt;/title&gt;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>&lt;!-- ARと3Dを表示するための無料ライブラリを読み込み --&gt;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>&lt;script src="https://aframe.io/releases/1.2.0/aframe.min.js"&gt;&lt;/script&gt;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>&lt;script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"&gt;&lt;/script&gt;</p>
+<p class="p1">&lt;/head&gt;</p>
+<p class="p1">&lt;body style="margin: 0; overflow: hidden;"&gt;</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">  </span>&lt;!-- ARの撮影画面を作成 --&gt;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>&lt;a-scene embedded arjs="sourceType: webcam; debugUIEnabled: false;"&gt;</p>
+<p class="p2"><span class="Apple-converted-space">    </span></p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;!-- Hiroマーカー（カメラにかざすマーク）を認識した時の処理 --&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;a-marker preset="hiro"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>&lt;!-- ここにスプレッドシートの文字を表示する（初期値は「読み込み中...」） --&gt;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>&lt;a-text id="ar-text" value="Loading..." position="0 0.5 0" rotation="-90 0 0" color="red" align="center" scale="2 2 2"&gt;&lt;/a-text&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;/a-marker&gt;</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;!-- カメラの配置 --&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;a-entity camera&gt;&lt;/a-entity&gt;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>&lt;/a-scene&gt;</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">  </span>&lt;script&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>// ★ここに手順1でコピーしたGASのURLを貼り付けます★</p>
+<p class="p3"><span class="s1"><span class="Apple-converted-space">    </span>const GAS_URL = "</span><span class="s2">https://script.google.com/a/macros/batonz.co.jp/s/AKfycbyqanQoAAmCqdtUDyYH3fmLrZmAMCOAWkZeuBKcQW664QoyPQhvDb3xdEI3pLwGnW-hcQ/exec</span><span class="s1">";</span></p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">    </span>// GASからデータを取ってくる処理（fetch）</p>
+<p class="p1"><span class="Apple-converted-space">    </span>fetch(GAS_URL)</p>
+<p class="p1"><span class="Apple-converted-space">      </span>.then(response =&gt; response.json())</p>
+<p class="p1"><span class="Apple-converted-space">      </span>.then(data =&gt; {</p>
+<p class="p1"><span class="Apple-converted-space">        </span>// 例: スプレッドシートのA1セル・B1セルの文字を取得して繋げる</p>
+<p class="p1"><span class="Apple-converted-space">        </span>// data[0][0] がA1セル、data[0][1] がB1セルに入っている文字です</p>
+<p class="p1"><span class="Apple-converted-space">        </span>const textToShow = data[0][0] + " : " + data[0][1];</p>
+<p class="p2"><span class="Apple-converted-space">        </span></p>
+<p class="p1"><span class="Apple-converted-space">        </span>// 画面上のARテキストを書き換える</p>
+<p class="p1"><span class="Apple-converted-space">        </span>document.getElementById("ar-text").setAttribute("value", textToShow);</p>
+<p class="p1"><span class="Apple-converted-space">      </span>})</p>
+<p class="p1"><span class="Apple-converted-space">      </span>.catch(error =&gt; {</p>
+<p class="p1"><span class="Apple-converted-space">        </span>console.error("エラー:", error);</p>
+<p class="p1"><span class="Apple-converted-space">        </span>document.getElementById("ar-text").setAttribute("value", "Error!");</p>
+<p class="p1"><span class="Apple-converted-space">      </span>});</p>
+<p class="p1"><span class="Apple-converted-space">  </span>&lt;/script&gt;</p>
+<p class="p2"><br></p>
+<p class="p1">&lt;/body&gt;</p>
+<p class="p1">&lt;/html&gt;</p>
+</body>
+</html>
